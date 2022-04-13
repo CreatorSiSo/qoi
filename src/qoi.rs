@@ -5,7 +5,7 @@ pub const PADDING: usize = 4;
 pub const _END_MARKER_SIZE: usize = 8;
 
 /// 0b00000000
-pub const _OP_INDEX: u8 = 0x00;
+pub const OP_INDEX: u8 = 0x00;
 /// 0b01000000
 pub const _OP_DIFF: u8 = 0x40;
 /// 0b10000000
@@ -30,5 +30,9 @@ pub struct Color {
 impl Color {
   pub fn new(r: u8, g: u8, b: u8, a: u8) -> Color {
     Color { r, g, b, a }
+  }
+
+  pub fn to_hash(&self) -> usize {
+    self.r as usize * 3 + self.g as usize * 5 + self.b as usize * 7 + self.a as usize * 11
   }
 }

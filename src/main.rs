@@ -2,6 +2,9 @@ use std::fs;
 mod qoi;
 
 fn main() -> Result<(), std::io::Error> {
+  // let color = qoi::Color::new(234, 102, 2, 90);
+  // println!("Color before: {:?}, Hash: {}", color, color.to_hash());
+
   // Temporary header configuration
   const WIDTH: u32 = 735; // 0x000002df
   const HEIGHT: u32 = 588; // 0x0000024c
@@ -11,15 +14,16 @@ fn main() -> Result<(), std::io::Error> {
   let input: Vec<u8> = fs::read("./assets/monument.bin")?;
 
   let image_size = input.len();
-  let max_size =
+  let _max_size =
     WIDTH as usize * HEIGHT as usize * (CHANNELS as usize + 1) + qoi::HEADER_SIZE + qoi::PADDING;
   let last_pixel = &image_size - CHANNELS as usize;
 
   let print_width = 15;
   println!("File Size:\t{:>print_width$} bytes", &image_size);
-  println!("Max Size:\t{:>print_width$} bytes", &max_size);
+  println!("Max Size:\t{:>print_width$} bytes", &image_size);
 
-  let mut output = Vec::with_capacity(max_size);
+  // TODO: Use calculated max_size again when header is known to be correct
+  let mut output = Vec::with_capacity(image_size);
 
   // Write the header
   output.extend_from_slice(&qoi::MAGIC);
@@ -46,23 +50,29 @@ fn main() -> Result<(), std::io::Error> {
 
     if current_color == previous_color {
       run += 1;
+      // Maximum run length reached
       if run == 62 || offset == last_pixel {
         output.push(qoi::OP_RUN | (run - 1));
         run = 0;
       }
     } else {
-      seen_pixels[{
-        (current_color.r as usize * 3
-          + current_color.g as usize * 5
-          + current_color.b as usize * 7
-          + current_color.a as usize * 11)
-          % 64
-      }] = current_color;
+      // The current_color is not the same as the one used by the run
+      if run > 0 {
+        output.push(qoi::OP_RUN | (run - 1));
+        run = 0;
+      }
 
-      output.push(current_color.r);
-      output.push(current_color.g);
-      output.push(current_color.b);
-      output.push(current_color.a);
+      let current_color_hash = &current_color.to_hash() % 64;
+      if current_color == seen_pixels[current_color_hash] {
+        output.push(qoi::OP_INDEX | current_color_hash as u8)
+      } else {
+        seen_pixels[current_color_hash] = current_color;
+
+        output.push(current_color.r);
+        output.push(current_color.g);
+        output.push(current_color.b);
+        output.push(current_color.a);
+      }
     }
 
     previous_color = current_color;
