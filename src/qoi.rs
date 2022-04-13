@@ -1,46 +1,22 @@
-#[derive(Debug, PartialEq, Eq)]
-pub struct Header {
-  pub magic: [char; 4], // magic bytes "qoif"
-  pub width: u32,       // image width in pixels (BE)
-  pub height: u32,      // image height in pixels (BE)
-  pub channels: u8,     // 3 = RGB, 4 = RGBA
-  pub colorspace: u8,   // 0 = sRGB with linear alpha; 1 = all channels linear
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
+pub struct Color {
+  pub r: u8,
+  pub g: u8,
+  pub b: u8,
+  pub a: u8,
 }
 
-impl Header {
-  // pub fn default() -> Header {
-  //   Header {
-  //     magic: ['q', 'o', 'i', 'f'],
-  //     width: 0,
-  //     height: 0,
-  //     channels: 3,
-  //     colorspace: 0,
-  //   }
-  // }
-
-  pub fn new(width: u32, height: u32, channels: u8, colorspace: u8) -> Header {
-    Header {
-      magic: ['q', 'o', 'i', 'f'],
-      width,
-      height,
-      channels,
-      colorspace,
+impl Color {
+  pub fn default() -> Color {
+    Color {
+      r: 0,
+      g: 0,
+      b: 0,
+      a: 0,
     }
   }
+
+  pub fn new(r: u8, g: u8, b: u8, a: u8) -> Color {
+    Color { r, g, b, a }
+  }
 }
-
-// #[cfg(test)]
-// mod tests {
-//   use crate::qoi;
-
-//   #[test]
-//   fn default_header() {
-//     todo!()
-//   }
-
-//   #[test]
-//   fn encode() {}
-
-//   #[test]
-//   fn decode() {}
-// }
