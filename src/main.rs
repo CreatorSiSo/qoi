@@ -2,39 +2,27 @@ use std::fs;
 mod qoi;
 
 fn main() -> Result<(), std::io::Error> {
-  const QOI_MAGIC: [u8; 4] = *b"qoif"; // 0x716f6966
-  const QOI_HEADER_SIZE: usize = 14;
-  const QOI_PADDING: usize = 4;
-  const _QOI_END_MARKER_SIZE: usize = 8;
-
-  const _QOI_OP_INDEX: u8 = 0x00; // 0b00000000
-  const _QOI_OP_DIFF: u8 = 0x40; // 0b01000000
-  const _QOI_OP_LUMA: u8 = 0x80; // 0b10000000
-  const _QOI_OP_RUN: u8 = 0xc0; // 0b11000000
-  const _QOI_OP_RGB: u8 = 0xfe; // 0b11111110
-  const _QOI_OP_RGBA: u8 = 0xff; // 0b11111111
-  const _QOI_MASK_2: u8 = 0xc0; // 0b11000000
-
-  // Header
+  // Temporary header configuration
   const WIDTH: u32 = 735; // 0x000002df
   const HEIGHT: u32 = 588; // 0x0000024c
   const CHANNELS: u8 = 4; // 0x04
   const COLORSPACE: u8 = 1; // 0x01
 
-  let input: Vec<u8> = fs::read("assets/monument.bin")?;
+  let input: Vec<u8> = fs::read("./assets/monument.bin")?;
 
   let image_size = input.len();
   let max_size =
-    WIDTH as usize * HEIGHT as usize * (CHANNELS as usize + 1) + QOI_HEADER_SIZE + QOI_PADDING;
+    WIDTH as usize * HEIGHT as usize * (CHANNELS as usize + 1) + qoi::HEADER_SIZE + qoi::PADDING;
   let last_pixel = &image_size - CHANNELS as usize;
 
-  println!("File Size: {} bytes", &image_size);
-  println!("Max Size: {max_size} bytes");
+  let print_width = 15;
+  println!("File Size:\t{:>print_width$} bytes", &image_size);
+  println!("Max Size:\t{:>print_width$} bytes", &max_size);
 
   let mut output = Vec::with_capacity(max_size);
 
   // Write the header
-  output.extend_from_slice(&QOI_MAGIC);
+  output.extend_from_slice(&qoi::MAGIC);
   output.extend_from_slice(&WIDTH.to_be_bytes());
   output.extend_from_slice(&HEIGHT.to_be_bytes());
   output.push(CHANNELS);
@@ -59,7 +47,7 @@ fn main() -> Result<(), std::io::Error> {
     if current_color == previous_color {
       run += 1;
       if run == 62 || offset == last_pixel {
-        output.push(_QOI_OP_RUN | (run - 1));
+        output.push(qoi::OP_RUN | (run - 1));
         run = 0;
       }
     } else {
@@ -81,11 +69,18 @@ fn main() -> Result<(), std::io::Error> {
     offset += CHANNELS as usize;
   }
 
-  for color in seen_pixels {
-    println!("{:?}", color);
-  }
+  // for color in seen_pixels {
+  //   println!("{:?}", color);
+  // }
 
   fs::write("./result.qoi", output)?;
+
+  println!(
+    "Compressed Size:{:>print_width$} bytes",
+    fs::metadata("./result.qoi")
+      .expect("Could not read file metadata")
+      .len()
+  );
 
   Ok(())
 }
