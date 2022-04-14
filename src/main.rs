@@ -11,7 +11,7 @@ fn main() -> Result<(), std::io::Error> {
   const CHANNELS: u8 = 4; // 0x04
   const COLORSPACE: u8 = 1; // 0x01
 
-  let input: Vec<u8> = fs::read("./assets/monument.bin")?;
+  let input: Vec<u8> = fs::read("./assets/monument-rgb.bin")?;
 
   let image_size = input.len();
   let _max_size =
