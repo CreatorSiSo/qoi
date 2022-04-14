@@ -66,16 +66,14 @@ fn main() -> Result<(), std::io::Error> {
         seen_pixels[current_color_hash] = current_color;
 
         let color_diff = previous_color - current_color;
-        const DIFF_RANGE: std::ops::RangeInclusive<i16> = -2..=1;
-        if DIFF_RANGE.contains(&color_diff.r)
-          && DIFF_RANGE.contains(&color_diff.g)
-          && DIFF_RANGE.contains(&color_diff.b)
-        // TODO: How does this work with rgba?
-        // && DIFF_RANGE.contains(&color_diff.a)
+        if (-2..=1).contains(&color_diff.r)
+          && (-2..=1).contains(&color_diff.g)
+          && (-2..=1).contains(&color_diff.b)
+          && color_diff.a == 0
         {
           let r = ((color_diff.r + 2) as u8) << 4;
-          let g = ((color_diff.r + 2) as u8) << 2;
-          let b = ((color_diff.r + 2) as u8) << 0;
+          let g = ((color_diff.g + 2) as u8) << 2;
+          let b = ((color_diff.b + 2) as u8) << 0;
           output.push(qoi::OP_DIFF | r | g | b);
         } else {
           // Write color value
