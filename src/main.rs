@@ -37,7 +37,6 @@ fn main() -> Result<(), std::io::Error> {
 
   let mut offset: usize = 0;
   while offset < last_pixel {
-    // Read color for the current pixel from bytes
     current_color = qoi::Color {
       r: input[offset + 0],
       g: input[offset + 1],
@@ -71,12 +70,32 @@ fn main() -> Result<(), std::io::Error> {
           && (-2..=1).contains(&color_diff.b)
           && color_diff.a == 0
         {
+          // Write RGB difference into one byte
+          // ! Alpha has to be the same as the previous color
+          //  ┌─ QOI_OP_DIFF ──────┐
+          //  │       Byte[0]      │
+          //  │ 7 6  5 4 3 2 1 0   │
+          //  │─────┼────┼────┼────│
+          //  │ 0 1 │ dr │ dg │ db │
+          //  └─────┴────┴────┴────┘
           let r = ((color_diff.r + 2) as u8) << 4;
           let g = ((color_diff.g + 2) as u8) << 2;
           let b = ((color_diff.b + 2) as u8) << 0;
           output.push(qoi::OP_DIFF | r | g | b);
         } else {
-          // Write color value
+          // Only write color value if all other encoding options failed
+          // ┌─ QOI_OP_RGBA ───────────┬─────────┬─────────┬─────────┬─────────┐
+          // │         Byte[0]         │ Byte[1] │ Byte[2] │ Byte[3] │ Byte[4] │
+          // │  7  6  5  4  3  2  1  0 │ 7 .. 0  │ 7 .. 0  │ 7 .. 0  │ 7 .. 0  │
+          // │─────────────────────────┼─────────┼─────────┼─────────┼─────────│
+          // │  1  1  1  1  1  1  1  1 │   red   │  green  │  blue   │  alpha  │
+          // └─────────────────────────┴─────────┴─────────┴─────────┴─────────┘
+          // ┌─ QOI_OP_RGB ────────────┬─────────┬─────────┬─────────┐
+          // │         Byte[0]         │ Byte[1] │ Byte[2] │ Byte[3] │
+          // │  7  6  5  4  3  2  1  0 │ 7 .. 0  │ 7 .. 0  │ 7 .. 0  │
+          // │─────────────────────────┼─────────┼─────────┼─────────│
+          // │  1  1  1  1  1  1  1  0 │   red   │  green  │   blue  │
+          // └─────────────────────────┴─────────┴─────────┴─────────┘
           output.push(if CHANNELS == 4 {
             qoi::OP_RGBA
           } else {
