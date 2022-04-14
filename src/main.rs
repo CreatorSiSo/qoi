@@ -2,14 +2,11 @@ use std::fs;
 mod qoi;
 
 fn main() -> Result<(), std::io::Error> {
-  // let color = qoi::Color::new(234, 102, 2, 90);
-  // println!("Color before: {:?}, Hash: {}", color, color.to_hash());
-
   // Temporary header configuration
-  const WIDTH: u32 = 735; // 0x000002df
-  const HEIGHT: u32 = 588; // 0x0000024c
-  const CHANNELS: u8 = 4; // 0x04
-  const COLORSPACE: u8 = 1; // 0x01
+  const WIDTH: u32 = 735;
+  const HEIGHT: u32 = 588;
+  const CHANNELS: u8 = 3; // 0b00000011
+  const COLORSPACE: u8 = 1; // 0b00000001
 
   let input: Vec<u8> = fs::read("./assets/monument-rgb.bin")?;
 

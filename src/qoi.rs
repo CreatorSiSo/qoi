@@ -5,19 +5,17 @@ pub const PADDING: usize = 4;
 pub const _END_MARKER_SIZE: usize = 8;
 
 /// 0b00000000
-pub const OP_INDEX: u8 = 0x00;
+pub const OP_INDEX: u8 = 0b0000000;
 /// 0b01000000
-pub const _OP_DIFF: u8 = 0x40;
+pub const OP_DIFF: u8 = 0b010000000;
 /// 0b10000000
-pub const _OP_LUMA: u8 = 0x80;
+pub const _OP_LUMA: u8 = 0b10000000;
 /// 0b11000000
-pub const OP_RUN: u8 = 0xc0;
+pub const OP_RUN: u8 = 0b11000000;
 /// 0b11111110
-pub const _OP_RGB: u8 = 0xfe;
+pub const OP_RGB: u8 = 0b11111110;
 /// 0b11111111
-pub const _OP_RGBA: u8 = 0xff;
-/// 0b11000000
-pub const _MASK_2: u8 = 0xc0;
+pub const OP_RGBA: u8 = 0b11111111;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub struct Color {
