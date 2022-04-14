@@ -1,3 +1,5 @@
+use std::ops::Sub;
+
 /// 0x716f6966
 pub const MAGIC: [u8; 4] = *b"qoif";
 pub const HEADER_SIZE: usize = 14;
@@ -33,4 +35,25 @@ impl Color {
   pub fn to_hash(&self) -> usize {
     self.r as usize * 3 + self.g as usize * 5 + self.b as usize * 7 + self.a as usize * 11
   }
+}
+
+impl Sub for Color {
+  type Output = ColorDiff;
+
+  fn sub(self, rhs: Color) -> ColorDiff {
+    ColorDiff {
+      r: self.r as i16 - rhs.r as i16,
+      g: self.g as i16 - rhs.g as i16,
+      b: self.b as i16 - rhs.b as i16,
+      a: self.a as i16 - rhs.a as i16,
+    }
+  }
+}
+
+#[derive(Debug)]
+pub struct ColorDiff {
+  pub r: i16,
+  pub g: i16,
+  pub b: i16,
+  pub a: i16,
 }

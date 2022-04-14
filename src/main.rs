@@ -65,10 +65,32 @@ fn main() -> Result<(), std::io::Error> {
       } else {
         seen_pixels[current_color_hash] = current_color;
 
-        output.push(current_color.r);
-        output.push(current_color.g);
-        output.push(current_color.b);
-        output.push(current_color.a);
+        let color_diff = previous_color - current_color;
+        const DIFF_RANGE: std::ops::RangeInclusive<i16> = -2..=1;
+        if DIFF_RANGE.contains(&color_diff.r)
+          && DIFF_RANGE.contains(&color_diff.g)
+          && DIFF_RANGE.contains(&color_diff.b)
+        // TODO: How does this work with rgba?
+        // && DIFF_RANGE.contains(&color_diff.a)
+        {
+          let r = ((color_diff.r + 2) as u8) << 4;
+          let g = ((color_diff.r + 2) as u8) << 2;
+          let b = ((color_diff.r + 2) as u8) << 0;
+          output.push(qoi::OP_DIFF | r | g | b);
+        } else {
+          // Write color value
+          output.push(if CHANNELS == 4 {
+            qoi::OP_RGBA
+          } else {
+            qoi::OP_RGB
+          });
+          output.push(current_color.r);
+          output.push(current_color.g);
+          output.push(current_color.b);
+          if CHANNELS == 4 {
+            output.push(current_color.a);
+          }
+        }
       }
     }
 
